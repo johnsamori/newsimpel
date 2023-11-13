@@ -1,0 +1,1819 @@
+<?php
+
+namespace PHPMaker2023\new2023;
+
+use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\FetchMode;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Query\QueryBuilder;
+
+/**
+ * Table class for languages
+ */
+class Languages extends DbTable
+{
+    protected $SqlFrom = "";
+    protected $SqlSelect = null;
+    protected $SqlSelectList = null;
+    protected $SqlWhere = "";
+    protected $SqlGroupBy = "";
+    protected $SqlHaving = "";
+    protected $SqlOrderBy = "";
+    public $DbErrorMessage = "";
+    public $UseSessionForListSql = true;
+
+    // Column CSS classes
+    public $LeftColumnClass = "col-sm-4 col-form-label ew-label";
+    public $RightColumnClass = "col-sm-8";
+    public $OffsetColumnClass = "col-sm-8 offset-sm-4";
+    public $TableLeftColumnClass = "w-col-4";
+
+    // Ajax / Modal
+    public $UseAjaxActions = false;
+    public $ModalSearch = false;
+    public $ModalView = false;
+    public $ModalAdd = false;
+    public $ModalEdit = false;
+    public $ModalUpdate = false;
+    public $InlineDelete = false;
+    public $ModalGridAdd = false;
+    public $ModalGridEdit = false;
+    public $ModalMultiEdit = false;
+
+    // Fields
+    public $Language_Code;
+    public $Language_Name;
+    public $_Default;
+    public $Site_Logo;
+    public $Site_Title;
+    public $Default_Thousands_Separator;
+    public $Default_Decimal_Point;
+    public $Default_Currency_Symbol;
+    public $Default_Money_Thousands_Separator;
+    public $Default_Money_Decimal_Point;
+    public $Terms_And_Condition_Text;
+    public $Announcement_Text;
+    public $About_Text;
+
+    // Page ID
+    public $PageID = ""; // To be overridden by subclass
+
+    // Constructor
+    public function __construct()
+    {
+        parent::__construct();
+        global $Language, $CurrentLanguage, $CurrentLocale;
+
+        // Language object
+        $Language = Container("language");
+        $this->TableVar = "languages";
+        $this->TableName = 'languages';
+        $this->TableType = "TABLE";
+        $this->ImportUseTransaction = $this->supportsTransaction() && Config("IMPORT_USE_TRANSACTION");
+        $this->UseTransaction = $this->supportsTransaction() && Config("USE_TRANSACTION");
+
+        // Update Table
+        $this->UpdateTable = "languages";
+        $this->Dbid = 'DB';
+        $this->ExportAll = false;
+        $this->ExportPageBreakCount = 0; // Page break per every n record (PDF only)
+
+        // PDF
+        $this->ExportPageOrientation = "portrait"; // Page orientation (PDF only)
+        $this->ExportPageSize = "a4"; // Page size (PDF only)
+
+        // PhpSpreadsheet
+        $this->ExportExcelPageOrientation = null; // Page orientation (PhpSpreadsheet only)
+        $this->ExportExcelPageSize = null; // Page size (PhpSpreadsheet only)
+
+        // PHPWord
+        $this->ExportWordPageOrientation = ""; // Page orientation (PHPWord only)
+        $this->ExportWordPageSize = ""; // Page orientation (PHPWord only)
+        $this->ExportWordColumnWidth = null; // Cell width (PHPWord only)
+        $this->DetailAdd = false; // Allow detail add
+        $this->DetailEdit = false; // Allow detail edit
+        $this->DetailView = false; // Allow detail view
+        $this->ShowMultipleDetails = false; // Show multiple details
+        $this->GridAddRowCount = 8;
+        $this->AllowAddDeleteRow = true; // Allow add/delete row
+        $this->UseAjaxActions = $this->UseAjaxActions || Config("USE_AJAX_ACTIONS");
+        $this->UserIDAllowSecurity = Config("DEFAULT_USER_ID_ALLOW_SECURITY"); // Default User ID allowed permissions
+        $this->BasicSearch = new BasicSearch($this);
+
+        // Language_Code
+        $this->Language_Code = new DbField(
+            $this, // Table
+            'x_Language_Code', // Variable name
+            'Language_Code', // Name
+            '`Language_Code`', // Expression
+            '`Language_Code`', // Basic search expression
+            200, // Type
+            5, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Language_Code`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->Language_Code->InputTextType = "text";
+        $this->Language_Code->IsPrimaryKey = true; // Primary key field
+        $this->Language_Code->Nullable = false; // NOT NULL field
+        $this->Language_Code->Required = true; // Required field
+        $this->Language_Code->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
+        $this->Fields['Language_Code'] = &$this->Language_Code;
+
+        // Language_Name
+        $this->Language_Name = new DbField(
+            $this, // Table
+            'x_Language_Name', // Variable name
+            'Language_Name', // Name
+            '`Language_Name`', // Expression
+            '`Language_Name`', // Basic search expression
+            200, // Type
+            20, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Language_Name`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->Language_Name->InputTextType = "text";
+        $this->Language_Name->Nullable = false; // NOT NULL field
+        $this->Language_Name->Required = true; // Required field
+        $this->Language_Name->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
+        $this->Fields['Language_Name'] = &$this->Language_Name;
+
+        // Default
+        $this->_Default = new DbField(
+            $this, // Table
+            'x__Default', // Variable name
+            'Default', // Name
+            '`Default`', // Expression
+            '`Default`', // Basic search expression
+            129, // Type
+            1, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Default`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'CHECKBOX' // Edit Tag
+        );
+        $this->_Default->addMethod("getDefault", fn() => "N");
+        $this->_Default->InputTextType = "text";
+        $this->_Default->DataType = DATATYPE_BOOLEAN;
+        $this->_Default->TrueValue = "Y";
+        $this->_Default->FalseValue = "N";
+        switch ($CurrentLanguage) {
+            case "en-US":
+                $this->_Default->Lookup = new Lookup('Default', 'languages', false, '', ["","","",""], '', '', [], [], [], [], [], [], '', '', "");
+                break;
+            case "id-ID":
+                $this->_Default->Lookup = new Lookup('Default', 'languages', false, '', ["","","",""], '', '', [], [], [], [], [], [], '', '', "");
+                break;
+            default:
+                $this->_Default->Lookup = new Lookup('Default', 'languages', false, '', ["","","",""], '', '', [], [], [], [], [], [], '', '', "");
+                break;
+        }
+        $this->_Default->OptionCount = 2;
+        $this->_Default->SearchOperators = ["=", "<>", "IS NULL", "IS NOT NULL"];
+        $this->Fields['Default'] = &$this->_Default;
+
+        // Site_Logo
+        $this->Site_Logo = new DbField(
+            $this, // Table
+            'x_Site_Logo', // Variable name
+            'Site_Logo', // Name
+            '`Site_Logo`', // Expression
+            '`Site_Logo`', // Basic search expression
+            200, // Type
+            100, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Site_Logo`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->Site_Logo->InputTextType = "text";
+        $this->Site_Logo->Nullable = false; // NOT NULL field
+        $this->Site_Logo->Required = true; // Required field
+        $this->Site_Logo->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
+        $this->Fields['Site_Logo'] = &$this->Site_Logo;
+
+        // Site_Title
+        $this->Site_Title = new DbField(
+            $this, // Table
+            'x_Site_Title', // Variable name
+            'Site_Title', // Name
+            '`Site_Title`', // Expression
+            '`Site_Title`', // Basic search expression
+            200, // Type
+            100, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Site_Title`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->Site_Title->InputTextType = "text";
+        $this->Site_Title->Nullable = false; // NOT NULL field
+        $this->Site_Title->Required = true; // Required field
+        $this->Site_Title->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
+        $this->Fields['Site_Title'] = &$this->Site_Title;
+
+        // Default_Thousands_Separator
+        $this->Default_Thousands_Separator = new DbField(
+            $this, // Table
+            'x_Default_Thousands_Separator', // Variable name
+            'Default_Thousands_Separator', // Name
+            '`Default_Thousands_Separator`', // Expression
+            '`Default_Thousands_Separator`', // Basic search expression
+            200, // Type
+            5, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Default_Thousands_Separator`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->Default_Thousands_Separator->InputTextType = "text";
+        $this->Default_Thousands_Separator->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY", "IS NULL", "IS NOT NULL"];
+        $this->Fields['Default_Thousands_Separator'] = &$this->Default_Thousands_Separator;
+
+        // Default_Decimal_Point
+        $this->Default_Decimal_Point = new DbField(
+            $this, // Table
+            'x_Default_Decimal_Point', // Variable name
+            'Default_Decimal_Point', // Name
+            '`Default_Decimal_Point`', // Expression
+            '`Default_Decimal_Point`', // Basic search expression
+            200, // Type
+            5, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Default_Decimal_Point`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->Default_Decimal_Point->InputTextType = "text";
+        $this->Default_Decimal_Point->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY", "IS NULL", "IS NOT NULL"];
+        $this->Fields['Default_Decimal_Point'] = &$this->Default_Decimal_Point;
+
+        // Default_Currency_Symbol
+        $this->Default_Currency_Symbol = new DbField(
+            $this, // Table
+            'x_Default_Currency_Symbol', // Variable name
+            'Default_Currency_Symbol', // Name
+            '`Default_Currency_Symbol`', // Expression
+            '`Default_Currency_Symbol`', // Basic search expression
+            200, // Type
+            10, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Default_Currency_Symbol`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->Default_Currency_Symbol->InputTextType = "text";
+        $this->Default_Currency_Symbol->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY", "IS NULL", "IS NOT NULL"];
+        $this->Fields['Default_Currency_Symbol'] = &$this->Default_Currency_Symbol;
+
+        // Default_Money_Thousands_Separator
+        $this->Default_Money_Thousands_Separator = new DbField(
+            $this, // Table
+            'x_Default_Money_Thousands_Separator', // Variable name
+            'Default_Money_Thousands_Separator', // Name
+            '`Default_Money_Thousands_Separator`', // Expression
+            '`Default_Money_Thousands_Separator`', // Basic search expression
+            200, // Type
+            5, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Default_Money_Thousands_Separator`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->Default_Money_Thousands_Separator->InputTextType = "text";
+        $this->Default_Money_Thousands_Separator->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY", "IS NULL", "IS NOT NULL"];
+        $this->Fields['Default_Money_Thousands_Separator'] = &$this->Default_Money_Thousands_Separator;
+
+        // Default_Money_Decimal_Point
+        $this->Default_Money_Decimal_Point = new DbField(
+            $this, // Table
+            'x_Default_Money_Decimal_Point', // Variable name
+            'Default_Money_Decimal_Point', // Name
+            '`Default_Money_Decimal_Point`', // Expression
+            '`Default_Money_Decimal_Point`', // Basic search expression
+            200, // Type
+            5, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Default_Money_Decimal_Point`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->Default_Money_Decimal_Point->InputTextType = "text";
+        $this->Default_Money_Decimal_Point->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY", "IS NULL", "IS NOT NULL"];
+        $this->Fields['Default_Money_Decimal_Point'] = &$this->Default_Money_Decimal_Point;
+
+        // Terms_And_Condition_Text
+        $this->Terms_And_Condition_Text = new DbField(
+            $this, // Table
+            'x_Terms_And_Condition_Text', // Variable name
+            'Terms_And_Condition_Text', // Name
+            '`Terms_And_Condition_Text`', // Expression
+            '`Terms_And_Condition_Text`', // Basic search expression
+            201, // Type
+            65535, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Terms_And_Condition_Text`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXTAREA' // Edit Tag
+        );
+        $this->Terms_And_Condition_Text->InputTextType = "text";
+        $this->Terms_And_Condition_Text->Nullable = false; // NOT NULL field
+        $this->Terms_And_Condition_Text->Required = true; // Required field
+        $this->Terms_And_Condition_Text->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
+        $this->Fields['Terms_And_Condition_Text'] = &$this->Terms_And_Condition_Text;
+
+        // Announcement_Text
+        $this->Announcement_Text = new DbField(
+            $this, // Table
+            'x_Announcement_Text', // Variable name
+            'Announcement_Text', // Name
+            '`Announcement_Text`', // Expression
+            '`Announcement_Text`', // Basic search expression
+            201, // Type
+            65535, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`Announcement_Text`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXTAREA' // Edit Tag
+        );
+        $this->Announcement_Text->InputTextType = "text";
+        $this->Announcement_Text->Nullable = false; // NOT NULL field
+        $this->Announcement_Text->Required = true; // Required field
+        $this->Announcement_Text->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
+        $this->Fields['Announcement_Text'] = &$this->Announcement_Text;
+
+        // About_Text
+        $this->About_Text = new DbField(
+            $this, // Table
+            'x_About_Text', // Variable name
+            'About_Text', // Name
+            '`About_Text`', // Expression
+            '`About_Text`', // Basic search expression
+            201, // Type
+            65535, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '`About_Text`', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXTAREA' // Edit Tag
+        );
+        $this->About_Text->InputTextType = "text";
+        $this->About_Text->Nullable = false; // NOT NULL field
+        $this->About_Text->Required = true; // Required field
+        $this->About_Text->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
+        $this->Fields['About_Text'] = &$this->About_Text;
+
+        // Add Doctrine Cache
+        $this->Cache = new ArrayCache();
+        $this->CacheProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(0, $this->TableVar);
+
+        // Call Table Load event
+        $this->tableLoad();
+    }
+
+    // Field Visibility
+    public function getFieldVisibility($fldParm)
+    {
+        global $Security;
+        return $this->$fldParm->Visible; // Returns original value
+    }
+
+    // Set left column class (must be predefined col-*-* classes of Bootstrap grid system)
+    public function setLeftColumnClass($class)
+    {
+        if (preg_match('/^col\-(\w+)\-(\d+)$/', $class, $match)) {
+            $this->LeftColumnClass = $class . " col-form-label ew-label";
+            $this->RightColumnClass = "col-" . $match[1] . "-" . strval(12 - (int)$match[2]);
+            $this->OffsetColumnClass = $this->RightColumnClass . " " . str_replace("col-", "offset-", $class);
+            $this->TableLeftColumnClass = preg_replace('/^col-\w+-(\d+)$/', "w-col-$1", $class); // Change to w-col-*
+        }
+    }
+
+    // Single column sort
+    public function updateSort(&$fld)
+    {
+        if ($this->CurrentOrder == $fld->Name) {
+            $sortField = $fld->Expression;
+            $lastSort = $fld->getSort();
+            if (in_array($this->CurrentOrderType, ["ASC", "DESC", "NO"])) {
+                $curSort = $this->CurrentOrderType;
+            } else {
+                $curSort = $lastSort;
+            }
+            $orderBy = in_array($curSort, ["ASC", "DESC"]) ? $sortField . " " . $curSort : "";
+            $this->setSessionOrderBy($orderBy); // Save to Session
+        }
+    }
+
+    // Update field sort
+    public function updateFieldSort()
+    {
+        $orderBy = $this->getSessionOrderBy(); // Get ORDER BY from Session
+        $flds = GetSortFields($orderBy);
+        foreach ($this->Fields as $field) {
+            $fldSort = "";
+            foreach ($flds as $fld) {
+                if ($fld[0] == $field->Expression || $fld[0] == $field->VirtualExpression) {
+                    $fldSort = $fld[1];
+                }
+            }
+            $field->setSort($fldSort);
+        }
+    }
+
+    // Render X Axis for chart
+    public function renderChartXAxis($chartVar, $chartRow)
+    {
+        return $chartRow;
+    }
+
+    // Table level SQL
+    public function getSqlFrom() // From
+    {
+        return ($this->SqlFrom != "") ? $this->SqlFrom : "languages";
+    }
+
+    public function sqlFrom() // For backward compatibility
+    {
+        return $this->getSqlFrom();
+    }
+
+    public function setSqlFrom($v)
+    {
+        $this->SqlFrom = $v;
+    }
+
+    public function getSqlSelect() // Select
+    {
+        return $this->SqlSelect ?? $this->getQueryBuilder()->select("*");
+    }
+
+    public function sqlSelect() // For backward compatibility
+    {
+        return $this->getSqlSelect();
+    }
+
+    public function setSqlSelect($v)
+    {
+        $this->SqlSelect = $v;
+    }
+
+    public function getSqlWhere() // Where
+    {
+        $where = ($this->SqlWhere != "") ? $this->SqlWhere : "";
+        $this->DefaultFilter = "";
+        AddFilter($where, $this->DefaultFilter);
+        return $where;
+    }
+
+    public function sqlWhere() // For backward compatibility
+    {
+        return $this->getSqlWhere();
+    }
+
+    public function setSqlWhere($v)
+    {
+        $this->SqlWhere = $v;
+    }
+
+    public function getSqlGroupBy() // Group By
+    {
+        return ($this->SqlGroupBy != "") ? $this->SqlGroupBy : "";
+    }
+
+    public function sqlGroupBy() // For backward compatibility
+    {
+        return $this->getSqlGroupBy();
+    }
+
+    public function setSqlGroupBy($v)
+    {
+        $this->SqlGroupBy = $v;
+    }
+
+    public function getSqlHaving() // Having
+    {
+        return ($this->SqlHaving != "") ? $this->SqlHaving : "";
+    }
+
+    public function sqlHaving() // For backward compatibility
+    {
+        return $this->getSqlHaving();
+    }
+
+    public function setSqlHaving($v)
+    {
+        $this->SqlHaving = $v;
+    }
+
+    public function getSqlOrderBy() // Order By
+    {
+        return ($this->SqlOrderBy != "") ? $this->SqlOrderBy : "";
+    }
+
+    public function sqlOrderBy() // For backward compatibility
+    {
+        return $this->getSqlOrderBy();
+    }
+
+    public function setSqlOrderBy($v)
+    {
+        $this->SqlOrderBy = $v;
+    }
+
+    // Apply User ID filters
+    public function applyUserIDFilters($filter, $id = "")
+    {
+        return $filter;
+    }
+
+    // Check if User ID security allows view all
+    public function userIDAllow($id = "")
+    {
+        $allow = $this->UserIDAllowSecurity;
+        switch ($id) {
+            case "add":
+            case "copy":
+            case "gridadd":
+            case "register":
+            case "addopt":
+                return (($allow & 1) == 1);
+            case "edit":
+            case "gridedit":
+            case "update":
+            case "changepassword":
+            case "resetpassword":
+                return (($allow & 4) == 4);
+            case "delete":
+                return (($allow & 2) == 2);
+            case "view":
+                return (($allow & 32) == 32);
+            case "search":
+                return (($allow & 64) == 64);
+            case "lookup":
+                return (($allow & 256) == 256);
+            default:
+                return (($allow & 8) == 8);
+        }
+    }
+
+    /**
+     * Get record count
+     *
+     * @param string|QueryBuilder $sql SQL or QueryBuilder
+     * @param mixed $c Connection
+     * @return int
+     */
+    public function getRecordCount($sql, $c = null)
+    {
+        $cnt = -1;
+        $rs = null;
+        if ($sql instanceof QueryBuilder) { // Query builder
+            $sqlwrk = clone $sql;
+            $sqlwrk = $sqlwrk->resetQueryPart("orderBy")->getSQL();
+        } else {
+            $sqlwrk = $sql;
+        }
+        $pattern = '/^SELECT\s([\s\S]+)\sFROM\s/i';
+        // Skip Custom View / SubQuery / SELECT DISTINCT / ORDER BY
+        if (
+            ($this->TableType == 'TABLE' || $this->TableType == 'VIEW' || $this->TableType == 'LINKTABLE') &&
+            preg_match($pattern, $sqlwrk) && !preg_match('/\(\s*(SELECT[^)]+)\)/i', $sqlwrk) &&
+            !preg_match('/^\s*select\s+distinct\s+/i', $sqlwrk) && !preg_match('/\s+order\s+by\s+/i', $sqlwrk)
+        ) {
+            $sqlwrk = "SELECT COUNT(*) FROM " . preg_replace($pattern, "", $sqlwrk);
+        } else {
+            $sqlwrk = "SELECT COUNT(*) FROM (" . $sqlwrk . ") COUNT_TABLE";
+        }
+        $conn = $c ?? $this->getConnection();
+        $cnt = $conn->fetchOne($sqlwrk);
+        if ($cnt !== false) {
+            return (int)$cnt;
+        }
+
+        // Unable to get count by SELECT COUNT(*), execute the SQL to get record count directly
+        return ExecuteRecordCount($sql, $conn);
+    }
+
+    // Get SQL
+    public function getSql($where, $orderBy = "")
+    {
+        return $this->getSqlAsQueryBuilder($where, $orderBy)->getSQL();
+    }
+
+    // Get QueryBuilder
+    public function getSqlAsQueryBuilder($where, $orderBy = "")
+    {
+        return $this->buildSelectSql(
+            $this->getSqlSelect(),
+            $this->getSqlFrom(),
+            $this->getSqlWhere(),
+            $this->getSqlGroupBy(),
+            $this->getSqlHaving(),
+            $this->getSqlOrderBy(),
+            $where,
+            $orderBy
+        );
+    }
+
+    // Table SQL
+    public function getCurrentSql()
+    {
+        $filter = $this->CurrentFilter;
+        $filter = $this->applyUserIDFilters($filter);
+        $sort = $this->getSessionOrderBy();
+        return $this->getSql($filter, $sort);
+    }
+
+    /**
+     * Table SQL with List page filter
+     *
+     * @return QueryBuilder
+     */
+    public function getListSql()
+    {
+        $filter = $this->UseSessionForListSql ? $this->getSessionWhere() : "";
+        AddFilter($filter, $this->CurrentFilter);
+        $filter = $this->applyUserIDFilters($filter);
+        $this->recordsetSelecting($filter);
+        $select = $this->getSqlSelect();
+        $from = $this->getSqlFrom();
+        $sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+        $this->Sort = $sort;
+        return $this->buildSelectSql(
+            $select,
+            $from,
+            $this->getSqlWhere(),
+            $this->getSqlGroupBy(),
+            $this->getSqlHaving(),
+            $this->getSqlOrderBy(),
+            $filter,
+            $sort
+        );
+    }
+
+    // Get ORDER BY clause
+    public function getOrderBy()
+    {
+        $orderBy = $this->getSqlOrderBy();
+        $sort = $this->getSessionOrderBy();
+        if ($orderBy != "" && $sort != "") {
+            $orderBy .= ", " . $sort;
+        } elseif ($sort != "") {
+            $orderBy = $sort;
+        }
+        return $orderBy;
+    }
+
+    // Get record count based on filter (for detail record count in master table pages)
+    public function loadRecordCount($filter)
+    {
+        $origFilter = $this->CurrentFilter;
+        $this->CurrentFilter = $filter;
+        $this->recordsetSelecting($this->CurrentFilter);
+        $select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : $this->getQueryBuilder()->select("*");
+        $groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
+        $having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
+        $sql = $this->buildSelectSql($select, $this->getSqlFrom(), $this->getSqlWhere(), $groupBy, $having, "", $this->CurrentFilter, "");
+        $cnt = $this->getRecordCount($sql);
+        $this->CurrentFilter = $origFilter;
+        return $cnt;
+    }
+
+    // Get record count (for current List page)
+    public function listRecordCount()
+    {
+        $filter = $this->getSessionWhere();
+        AddFilter($filter, $this->CurrentFilter);
+        $filter = $this->applyUserIDFilters($filter);
+        $this->recordsetSelecting($filter);
+        $select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : $this->getQueryBuilder()->select("*");
+        $groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
+        $having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
+        $sql = $this->buildSelectSql($select, $this->getSqlFrom(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+        $cnt = $this->getRecordCount($sql);
+        return $cnt;
+    }
+
+    /**
+     * INSERT statement
+     *
+     * @param mixed $rs
+     * @return QueryBuilder
+     */
+    public function insertSql(&$rs)
+    {
+        $queryBuilder = $this->getQueryBuilder();
+        $queryBuilder->insert($this->UpdateTable);
+        foreach ($rs as $name => $value) {
+            if (!isset($this->Fields[$name]) || $this->Fields[$name]->IsCustom) {
+                continue;
+            }
+            $type = GetParameterType($this->Fields[$name], $value, $this->Dbid);
+            $queryBuilder->setValue($this->Fields[$name]->Expression, $queryBuilder->createPositionalParameter($value, $type));
+        }
+        return $queryBuilder;
+    }
+
+    // Insert
+    public function insert(&$rs)
+    {
+        $conn = $this->getConnection();
+        try {
+            $success = $this->insertSql($rs)->execute();
+            $this->DbErrorMessage = "";
+        } catch (\Exception $e) {
+            $success = false;
+            $this->DbErrorMessage = $e->getMessage();
+        }
+        if ($success) {
+        }
+        return $success;
+    }
+
+    /**
+     * UPDATE statement
+     *
+     * @param array $rs Data to be updated
+     * @param string|array $where WHERE clause
+     * @param string $curfilter Filter
+     * @return QueryBuilder
+     */
+    public function updateSql(&$rs, $where = "", $curfilter = true)
+    {
+        $queryBuilder = $this->getQueryBuilder();
+        $queryBuilder->update($this->UpdateTable);
+        foreach ($rs as $name => $value) {
+            if (!isset($this->Fields[$name]) || $this->Fields[$name]->IsCustom || $this->Fields[$name]->IsAutoIncrement) {
+                continue;
+            }
+            $type = GetParameterType($this->Fields[$name], $value, $this->Dbid);
+            $queryBuilder->set($this->Fields[$name]->Expression, $queryBuilder->createPositionalParameter($value, $type));
+        }
+        $filter = ($curfilter) ? $this->CurrentFilter : "";
+        if (is_array($where)) {
+            $where = $this->arrayToFilter($where);
+        }
+        AddFilter($filter, $where);
+        if ($filter != "") {
+            $queryBuilder->where($filter);
+        }
+        return $queryBuilder;
+    }
+
+    // Update
+    public function update(&$rs, $where = "", $rsold = null, $curfilter = true)
+    {
+        // If no field is updated, execute may return 0. Treat as success
+        try {
+            $success = $this->updateSql($rs, $where, $curfilter)->execute();
+            $success = ($success > 0) ? $success : true;
+            $this->DbErrorMessage = "";
+        } catch (\Exception $e) {
+            $success = false;
+            $this->DbErrorMessage = $e->getMessage();
+        }
+        return $success;
+    }
+
+    /**
+     * DELETE statement
+     *
+     * @param array $rs Key values
+     * @param string|array $where WHERE clause
+     * @param string $curfilter Filter
+     * @return QueryBuilder
+     */
+    public function deleteSql(&$rs, $where = "", $curfilter = true)
+    {
+        $queryBuilder = $this->getQueryBuilder();
+        $queryBuilder->delete($this->UpdateTable);
+        if (is_array($where)) {
+            $where = $this->arrayToFilter($where);
+        }
+        if ($rs) {
+            if (array_key_exists('Language_Code', $rs)) {
+                AddFilter($where, QuotedName('Language_Code', $this->Dbid) . '=' . QuotedValue($rs['Language_Code'], $this->Language_Code->DataType, $this->Dbid));
+            }
+        }
+        $filter = ($curfilter) ? $this->CurrentFilter : "";
+        AddFilter($filter, $where);
+        return $queryBuilder->where($filter != "" ? $filter : "0=1");
+    }
+
+    // Delete
+    public function delete(&$rs, $where = "", $curfilter = false)
+    {
+        $success = true;
+        if ($success) {
+            try {
+                $success = $this->deleteSql($rs, $where, $curfilter)->execute();
+                $this->DbErrorMessage = "";
+            } catch (\Exception $e) {
+                $success = false;
+                $this->DbErrorMessage = $e->getMessage();
+            }
+        }
+        return $success;
+    }
+
+    // Load DbValue from recordset or array
+    protected function loadDbValues($row)
+    {
+        if (!is_array($row)) {
+            return;
+        }
+        $this->Language_Code->DbValue = $row['Language_Code'];
+        $this->Language_Name->DbValue = $row['Language_Name'];
+        $this->_Default->DbValue = $row['Default'];
+        $this->Site_Logo->DbValue = $row['Site_Logo'];
+        $this->Site_Title->DbValue = $row['Site_Title'];
+        $this->Default_Thousands_Separator->DbValue = $row['Default_Thousands_Separator'];
+        $this->Default_Decimal_Point->DbValue = $row['Default_Decimal_Point'];
+        $this->Default_Currency_Symbol->DbValue = $row['Default_Currency_Symbol'];
+        $this->Default_Money_Thousands_Separator->DbValue = $row['Default_Money_Thousands_Separator'];
+        $this->Default_Money_Decimal_Point->DbValue = $row['Default_Money_Decimal_Point'];
+        $this->Terms_And_Condition_Text->DbValue = $row['Terms_And_Condition_Text'];
+        $this->Announcement_Text->DbValue = $row['Announcement_Text'];
+        $this->About_Text->DbValue = $row['About_Text'];
+    }
+
+    // Delete uploaded files
+    public function deleteUploadedFiles($row)
+    {
+        $this->loadDbValues($row);
+    }
+
+    // Record filter WHERE clause
+    protected function sqlKeyFilter()
+    {
+        return "`Language_Code` = '@Language_Code@'";
+    }
+
+    // Get Key
+    public function getKey($current = false)
+    {
+        $keys = [];
+        $val = $current ? $this->Language_Code->CurrentValue : $this->Language_Code->OldValue;
+        if (EmptyValue($val)) {
+            return "";
+        } else {
+            $keys[] = $val;
+        }
+        return implode(Config("COMPOSITE_KEY_SEPARATOR"), $keys);
+    }
+
+    // Set Key
+    public function setKey($key, $current = false)
+    {
+        $this->OldKey = strval($key);
+        $keys = explode(Config("COMPOSITE_KEY_SEPARATOR"), $this->OldKey);
+        if (count($keys) == 1) {
+            if ($current) {
+                $this->Language_Code->CurrentValue = $keys[0];
+            } else {
+                $this->Language_Code->OldValue = $keys[0];
+            }
+        }
+    }
+
+    // Get record filter
+    public function getRecordFilter($row = null, $current = false)
+    {
+        $keyFilter = $this->sqlKeyFilter();
+        if (is_array($row)) {
+            $val = array_key_exists('Language_Code', $row) ? $row['Language_Code'] : null;
+        } else {
+            $val = !EmptyValue($this->Language_Code->OldValue) && !$current ? $this->Language_Code->OldValue : $this->Language_Code->CurrentValue;
+        }
+        if ($val === null) {
+            return "0=1"; // Invalid key
+        } else {
+            $keyFilter = str_replace("@Language_Code@", AdjustSql($val, $this->Dbid), $keyFilter); // Replace key value
+        }
+        return $keyFilter;
+    }
+
+    // Return page URL
+    public function getReturnUrl()
+    {
+        $referUrl = ReferUrl();
+        $referPageName = ReferPageName();
+        $name = PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_RETURN_URL");
+        // Get referer URL automatically
+        if ($referUrl != "" && $referPageName != CurrentPageName() && $referPageName != "login") { // Referer not same page or login page
+            $_SESSION[$name] = $referUrl; // Save to Session
+        }
+        return $_SESSION[$name] ?? GetUrl("languageslist");
+    }
+
+    // Set return page URL
+    public function setReturnUrl($v)
+    {
+        $_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_RETURN_URL")] = $v;
+    }
+
+    // Get modal caption
+    public function getModalCaption($pageName)
+    {
+        global $Language;
+        if ($pageName == "languagesview") {
+            return $Language->phrase("View");
+        } elseif ($pageName == "languagesedit") {
+            return $Language->phrase("Edit");
+        } elseif ($pageName == "languagesadd") {
+            return $Language->phrase("Add");
+        }
+        return "";
+    }
+
+    // API page name
+    public function getApiPageName($action)
+    {
+        switch (strtolower($action)) {
+            case Config("API_VIEW_ACTION"):
+                return "LanguagesView";
+            case Config("API_ADD_ACTION"):
+                return "LanguagesAdd";
+            case Config("API_EDIT_ACTION"):
+                return "LanguagesEdit";
+            case Config("API_DELETE_ACTION"):
+                return "LanguagesDelete";
+            case Config("API_LIST_ACTION"):
+                return "LanguagesList";
+            default:
+                return "";
+        }
+    }
+
+    // Current URL
+    public function getCurrentUrl($parm = "")
+    {
+        $url = CurrentPageUrl(false);
+        if ($parm != "") {
+            $url = $this->keyUrl($url, $parm);
+        } else {
+            $url = $this->keyUrl($url, Config("TABLE_SHOW_DETAIL") . "=");
+        }
+        return $this->addMasterUrl($url);
+    }
+
+    // List URL
+    public function getListUrl()
+    {
+        return "languageslist";
+    }
+
+    // View URL
+    public function getViewUrl($parm = "")
+    {
+        if ($parm != "") {
+            $url = $this->keyUrl("languagesview", $parm);
+        } else {
+            $url = $this->keyUrl("languagesview", Config("TABLE_SHOW_DETAIL") . "=");
+        }
+        return $this->addMasterUrl($url);
+    }
+
+    // Add URL
+    public function getAddUrl($parm = "")
+    {
+        if ($parm != "") {
+            $url = "languagesadd?" . $parm;
+        } else {
+            $url = "languagesadd";
+        }
+        return $this->addMasterUrl($url);
+    }
+
+    // Edit URL
+    public function getEditUrl($parm = "")
+    {
+        $url = $this->keyUrl("languagesedit", $parm);
+        return $this->addMasterUrl($url);
+    }
+
+    // Inline edit URL
+    public function getInlineEditUrl()
+    {
+        $url = $this->keyUrl("languageslist", "action=edit");
+        return $this->addMasterUrl($url);
+    }
+
+    // Copy URL
+    public function getCopyUrl($parm = "")
+    {
+        $url = $this->keyUrl("languagesadd", $parm);
+        return $this->addMasterUrl($url);
+    }
+
+    // Inline copy URL
+    public function getInlineCopyUrl()
+    {
+        $url = $this->keyUrl("languageslist", "action=copy");
+        return $this->addMasterUrl($url);
+    }
+
+    // Delete URL
+    public function getDeleteUrl()
+    {
+        if ($this->UseAjaxActions && ConvertToBool(Param("infinitescroll")) && CurrentPageID() == "list") {
+            return $this->keyUrl(GetApiUrl(Config("API_DELETE_ACTION") . "/" . $this->TableVar));
+        } else {
+            return $this->keyUrl("languagesdelete");
+        }
+    }
+
+    // Add master url
+    public function addMasterUrl($url)
+    {
+        return $url;
+    }
+
+    public function keyToJson($htmlEncode = false)
+    {
+        $json = "";
+        $json .= "\"Language_Code\":" . JsonEncode($this->Language_Code->CurrentValue, "string");
+        $json = "{" . $json . "}";
+        if ($htmlEncode) {
+            $json = HtmlEncode($json);
+        }
+        return $json;
+    }
+
+    // Add key value to URL
+    public function keyUrl($url, $parm = "")
+    {
+        if ($this->Language_Code->CurrentValue !== null) {
+            $url .= "/" . $this->encodeKeyValue($this->Language_Code->CurrentValue);
+        } else {
+            return "javascript:ew.alert(ew.language.phrase('InvalidRecord'));";
+        }
+        if ($parm != "") {
+            $url .= "?" . $parm;
+        }
+        return $url;
+    }
+
+    // Render sort
+    public function renderFieldHeader($fld)
+    {
+        global $Security, $Language, $Page;
+        $sortUrl = "";
+        $attrs = "";
+        if ($fld->Sortable) {
+            $sortUrl = $this->sortUrl($fld);
+            $attrs = ' role="button" data-ew-action="sort" data-ajax="' . ($this->UseAjaxActions ? "true" : "false") . '" data-sort-url="' . $sortUrl . '" data-sort-type="1"';
+            if ($this->ContextClass) { // Add context
+                $attrs .= ' data-context="' . HtmlEncode($this->ContextClass) . '"';
+            }
+        }
+        $html = '<div class="ew-table-header-caption"' . $attrs . '>' . $fld->caption() . '</div>';
+        if ($sortUrl) {
+            $html .= '<div class="ew-table-header-sort">' . $fld->getSortIcon() . '</div>';
+        }
+        if ($fld->UseFilter && $Security->canSearch()) {
+            $html .= '<div class="ew-filter-dropdown-btn" data-ew-action="filter" data-table="' . $fld->TableVar . '" data-field="' . $fld->FieldVar .
+                '"><div class="ew-table-header-filter" role="button" aria-haspopup="true">' . $Language->phrase("Filter") . '</div></div>';
+        }
+        $html = '<div class="ew-table-header-btn">' . $html . '</div>';
+        if ($this->UseCustomTemplate) {
+            $scriptId = str_replace("{id}", $fld->TableVar . "_" . $fld->Param, "tpc_{id}");
+            $html = '<template id="' . $scriptId . '">' . $html . '</template>';
+        }
+        return $html;
+    }
+
+    // Sort URL
+    public function sortUrl($fld)
+    {
+        global $DashboardReport;
+        if (
+            $this->CurrentAction || $this->isExport() ||
+            in_array($fld->Type, [128, 204, 205])
+        ) { // Unsortable data type
+                return "";
+        } elseif ($fld->Sortable) {
+            $urlParm = "order=" . urlencode($fld->Name) . "&amp;ordertype=" . $fld->getNextSort();
+            if ($DashboardReport) {
+                $urlParm .= "&amp;dashboard=true";
+            }
+            return $this->addMasterUrl($this->CurrentPageName . "?" . $urlParm);
+        } else {
+            return "";
+        }
+    }
+
+    // Get record keys from Post/Get/Session
+    public function getRecordKeys()
+    {
+        $arKeys = [];
+        $arKey = [];
+        if (Param("key_m") !== null) {
+            $arKeys = Param("key_m");
+            $cnt = count($arKeys);
+        } else {
+            if (($keyValue = Param("Language_Code") ?? Route("Language_Code")) !== null) {
+                $arKeys[] = $keyValue;
+            } elseif (IsApi() && (($keyValue = Key(0) ?? Route(2)) !== null)) {
+                $arKeys[] = $keyValue;
+            } else {
+                $arKeys = null; // Do not setup
+            }
+
+            //return $arKeys; // Do not return yet, so the values will also be checked by the following code
+        }
+        // Check keys
+        $ar = [];
+        if (is_array($arKeys)) {
+            foreach ($arKeys as $key) {
+                $ar[] = $key;
+            }
+        }
+        return $ar;
+    }
+
+    // Get filter from records
+    public function getFilterFromRecords($rows)
+    {
+        $keyFilter = "";
+        foreach ($rows as $row) {
+            if ($keyFilter != "") {
+                $keyFilter .= " OR ";
+            }
+            $keyFilter .= "(" . $this->getRecordFilter($row) . ")";
+        }
+        return $keyFilter;
+    }
+
+    // Get filter from record keys
+    public function getFilterFromRecordKeys($setCurrent = true)
+    {
+        $arKeys = $this->getRecordKeys();
+        $keyFilter = "";
+        foreach ($arKeys as $key) {
+            if ($keyFilter != "") {
+                $keyFilter .= " OR ";
+            }
+            if ($setCurrent) {
+                $this->Language_Code->CurrentValue = $key;
+            } else {
+                $this->Language_Code->OldValue = $key;
+            }
+            $keyFilter .= "(" . $this->getRecordFilter() . ")";
+        }
+        return $keyFilter;
+    }
+
+    // Load recordset based on filter / sort
+    public function loadRs($filter, $sort = "")
+    {
+        $sql = $this->getSql($filter, $sort); // Set up filter (WHERE Clause) / sort (ORDER BY Clause)
+        $conn = $this->getConnection();
+        return $conn->executeQuery($sql);
+    }
+
+    // Load row values from record
+    public function loadListRowValues(&$rs)
+    {
+        if (is_array($rs)) {
+            $row = $rs;
+        } elseif ($rs && property_exists($rs, "fields")) { // Recordset
+            $row = $rs->fields;
+        } else {
+            return;
+        }
+        $this->Language_Code->setDbValue($row['Language_Code']);
+        $this->Language_Name->setDbValue($row['Language_Name']);
+        $this->_Default->setDbValue($row['Default']);
+        $this->Site_Logo->setDbValue($row['Site_Logo']);
+        $this->Site_Title->setDbValue($row['Site_Title']);
+        $this->Default_Thousands_Separator->setDbValue($row['Default_Thousands_Separator']);
+        $this->Default_Decimal_Point->setDbValue($row['Default_Decimal_Point']);
+        $this->Default_Currency_Symbol->setDbValue($row['Default_Currency_Symbol']);
+        $this->Default_Money_Thousands_Separator->setDbValue($row['Default_Money_Thousands_Separator']);
+        $this->Default_Money_Decimal_Point->setDbValue($row['Default_Money_Decimal_Point']);
+        $this->Terms_And_Condition_Text->setDbValue($row['Terms_And_Condition_Text']);
+        $this->Announcement_Text->setDbValue($row['Announcement_Text']);
+        $this->About_Text->setDbValue($row['About_Text']);
+    }
+
+    // Render list content
+    public function renderListContent($filter)
+    {
+        global $Response;
+        $listPage = "LanguagesList";
+        $listClass = PROJECT_NAMESPACE . $listPage;
+        $page = new $listClass();
+        $page->loadRecordsetFromFilter($filter);
+        $view = Container("view");
+        $template = $listPage . ".php"; // View
+        $GLOBALS["Title"] ??= $page->Title; // Title
+        try {
+            $Response = $view->render($Response, $template, $GLOBALS);
+        } finally {
+            $page->terminate(); // Terminate page and clean up
+        }
+    }
+
+    // Render list row values
+    public function renderListRow()
+    {
+        global $Security, $CurrentLanguage, $Language;
+
+        // Call Row Rendering event
+        $this->rowRendering();
+
+        // Common render codes
+
+        // Language_Code
+
+        // Language_Name
+
+        // Default
+
+        // Site_Logo
+
+        // Site_Title
+
+        // Default_Thousands_Separator
+
+        // Default_Decimal_Point
+
+        // Default_Currency_Symbol
+
+        // Default_Money_Thousands_Separator
+
+        // Default_Money_Decimal_Point
+
+        // Terms_And_Condition_Text
+
+        // Announcement_Text
+
+        // About_Text
+
+        // Language_Code
+        $this->Language_Code->ViewValue = $this->Language_Code->CurrentValue;
+
+        // Language_Name
+        $this->Language_Name->ViewValue = $this->Language_Name->CurrentValue;
+
+        // Default
+        if (ConvertToBool($this->_Default->CurrentValue)) {
+            $this->_Default->ViewValue = $this->_Default->tagCaption(1) != "" ? $this->_Default->tagCaption(1) : "Y";
+        } else {
+            $this->_Default->ViewValue = $this->_Default->tagCaption(2) != "" ? $this->_Default->tagCaption(2) : "N";
+        }
+
+        // Site_Logo
+        $this->Site_Logo->ViewValue = $this->Site_Logo->CurrentValue;
+
+        // Site_Title
+        $this->Site_Title->ViewValue = $this->Site_Title->CurrentValue;
+
+        // Default_Thousands_Separator
+        $this->Default_Thousands_Separator->ViewValue = $this->Default_Thousands_Separator->CurrentValue;
+
+        // Default_Decimal_Point
+        $this->Default_Decimal_Point->ViewValue = $this->Default_Decimal_Point->CurrentValue;
+
+        // Default_Currency_Symbol
+        $this->Default_Currency_Symbol->ViewValue = $this->Default_Currency_Symbol->CurrentValue;
+
+        // Default_Money_Thousands_Separator
+        $this->Default_Money_Thousands_Separator->ViewValue = $this->Default_Money_Thousands_Separator->CurrentValue;
+
+        // Default_Money_Decimal_Point
+        $this->Default_Money_Decimal_Point->ViewValue = $this->Default_Money_Decimal_Point->CurrentValue;
+
+        // Terms_And_Condition_Text
+        $this->Terms_And_Condition_Text->ViewValue = $this->Terms_And_Condition_Text->CurrentValue;
+
+        // Announcement_Text
+        $this->Announcement_Text->ViewValue = $this->Announcement_Text->CurrentValue;
+
+        // About_Text
+        $this->About_Text->ViewValue = $this->About_Text->CurrentValue;
+
+        // Language_Code
+        $this->Language_Code->HrefValue = "";
+        $this->Language_Code->TooltipValue = "";
+
+        // Language_Name
+        $this->Language_Name->HrefValue = "";
+        $this->Language_Name->TooltipValue = "";
+
+        // Default
+        $this->_Default->HrefValue = "";
+        $this->_Default->TooltipValue = "";
+
+        // Site_Logo
+        $this->Site_Logo->HrefValue = "";
+        $this->Site_Logo->TooltipValue = "";
+
+        // Site_Title
+        $this->Site_Title->HrefValue = "";
+        $this->Site_Title->TooltipValue = "";
+
+        // Default_Thousands_Separator
+        $this->Default_Thousands_Separator->HrefValue = "";
+        $this->Default_Thousands_Separator->TooltipValue = "";
+
+        // Default_Decimal_Point
+        $this->Default_Decimal_Point->HrefValue = "";
+        $this->Default_Decimal_Point->TooltipValue = "";
+
+        // Default_Currency_Symbol
+        $this->Default_Currency_Symbol->HrefValue = "";
+        $this->Default_Currency_Symbol->TooltipValue = "";
+
+        // Default_Money_Thousands_Separator
+        $this->Default_Money_Thousands_Separator->HrefValue = "";
+        $this->Default_Money_Thousands_Separator->TooltipValue = "";
+
+        // Default_Money_Decimal_Point
+        $this->Default_Money_Decimal_Point->HrefValue = "";
+        $this->Default_Money_Decimal_Point->TooltipValue = "";
+
+        // Terms_And_Condition_Text
+        $this->Terms_And_Condition_Text->HrefValue = "";
+        $this->Terms_And_Condition_Text->TooltipValue = "";
+
+        // Announcement_Text
+        $this->Announcement_Text->HrefValue = "";
+        $this->Announcement_Text->TooltipValue = "";
+
+        // About_Text
+        $this->About_Text->HrefValue = "";
+        $this->About_Text->TooltipValue = "";
+
+        // Call Row Rendered event
+        $this->rowRendered();
+
+        // Save data for Custom Template
+        $this->Rows[] = $this->customTemplateFieldValues();
+    }
+
+    // Render edit row values
+    public function renderEditRow()
+    {
+        global $Security, $CurrentLanguage, $Language;
+
+        // Call Row Rendering event
+        $this->rowRendering();
+
+        // Language_Code
+        $this->Language_Code->setupEditAttributes();
+        if (!$this->Language_Code->Raw) {
+            $this->Language_Code->CurrentValue = HtmlDecode($this->Language_Code->CurrentValue);
+        }
+        $this->Language_Code->EditValue = $this->Language_Code->CurrentValue;
+        $this->Language_Code->PlaceHolder = RemoveHtml($this->Language_Code->caption());
+
+        // Language_Name
+        $this->Language_Name->setupEditAttributes();
+        if (!$this->Language_Name->Raw) {
+            $this->Language_Name->CurrentValue = HtmlDecode($this->Language_Name->CurrentValue);
+        }
+        $this->Language_Name->EditValue = $this->Language_Name->CurrentValue;
+        $this->Language_Name->PlaceHolder = RemoveHtml($this->Language_Name->caption());
+
+        // Default
+        $this->_Default->EditValue = $this->_Default->options(false);
+        $this->_Default->PlaceHolder = RemoveHtml($this->_Default->caption());
+
+        // Site_Logo
+        $this->Site_Logo->setupEditAttributes();
+        if (!$this->Site_Logo->Raw) {
+            $this->Site_Logo->CurrentValue = HtmlDecode($this->Site_Logo->CurrentValue);
+        }
+        $this->Site_Logo->EditValue = $this->Site_Logo->CurrentValue;
+        $this->Site_Logo->PlaceHolder = RemoveHtml($this->Site_Logo->caption());
+
+        // Site_Title
+        $this->Site_Title->setupEditAttributes();
+        if (!$this->Site_Title->Raw) {
+            $this->Site_Title->CurrentValue = HtmlDecode($this->Site_Title->CurrentValue);
+        }
+        $this->Site_Title->EditValue = $this->Site_Title->CurrentValue;
+        $this->Site_Title->PlaceHolder = RemoveHtml($this->Site_Title->caption());
+
+        // Default_Thousands_Separator
+        $this->Default_Thousands_Separator->setupEditAttributes();
+        if (!$this->Default_Thousands_Separator->Raw) {
+            $this->Default_Thousands_Separator->CurrentValue = HtmlDecode($this->Default_Thousands_Separator->CurrentValue);
+        }
+        $this->Default_Thousands_Separator->EditValue = $this->Default_Thousands_Separator->CurrentValue;
+        $this->Default_Thousands_Separator->PlaceHolder = RemoveHtml($this->Default_Thousands_Separator->caption());
+
+        // Default_Decimal_Point
+        $this->Default_Decimal_Point->setupEditAttributes();
+        if (!$this->Default_Decimal_Point->Raw) {
+            $this->Default_Decimal_Point->CurrentValue = HtmlDecode($this->Default_Decimal_Point->CurrentValue);
+        }
+        $this->Default_Decimal_Point->EditValue = $this->Default_Decimal_Point->CurrentValue;
+        $this->Default_Decimal_Point->PlaceHolder = RemoveHtml($this->Default_Decimal_Point->caption());
+
+        // Default_Currency_Symbol
+        $this->Default_Currency_Symbol->setupEditAttributes();
+        if (!$this->Default_Currency_Symbol->Raw) {
+            $this->Default_Currency_Symbol->CurrentValue = HtmlDecode($this->Default_Currency_Symbol->CurrentValue);
+        }
+        $this->Default_Currency_Symbol->EditValue = $this->Default_Currency_Symbol->CurrentValue;
+        $this->Default_Currency_Symbol->PlaceHolder = RemoveHtml($this->Default_Currency_Symbol->caption());
+
+        // Default_Money_Thousands_Separator
+        $this->Default_Money_Thousands_Separator->setupEditAttributes();
+        if (!$this->Default_Money_Thousands_Separator->Raw) {
+            $this->Default_Money_Thousands_Separator->CurrentValue = HtmlDecode($this->Default_Money_Thousands_Separator->CurrentValue);
+        }
+        $this->Default_Money_Thousands_Separator->EditValue = $this->Default_Money_Thousands_Separator->CurrentValue;
+        $this->Default_Money_Thousands_Separator->PlaceHolder = RemoveHtml($this->Default_Money_Thousands_Separator->caption());
+
+        // Default_Money_Decimal_Point
+        $this->Default_Money_Decimal_Point->setupEditAttributes();
+        if (!$this->Default_Money_Decimal_Point->Raw) {
+            $this->Default_Money_Decimal_Point->CurrentValue = HtmlDecode($this->Default_Money_Decimal_Point->CurrentValue);
+        }
+        $this->Default_Money_Decimal_Point->EditValue = $this->Default_Money_Decimal_Point->CurrentValue;
+        $this->Default_Money_Decimal_Point->PlaceHolder = RemoveHtml($this->Default_Money_Decimal_Point->caption());
+
+        // Terms_And_Condition_Text
+        $this->Terms_And_Condition_Text->setupEditAttributes();
+        $this->Terms_And_Condition_Text->EditValue = $this->Terms_And_Condition_Text->CurrentValue;
+        $this->Terms_And_Condition_Text->PlaceHolder = RemoveHtml($this->Terms_And_Condition_Text->caption());
+
+        // Announcement_Text
+        $this->Announcement_Text->setupEditAttributes();
+        $this->Announcement_Text->EditValue = $this->Announcement_Text->CurrentValue;
+        $this->Announcement_Text->PlaceHolder = RemoveHtml($this->Announcement_Text->caption());
+
+        // About_Text
+        $this->About_Text->setupEditAttributes();
+        $this->About_Text->EditValue = $this->About_Text->CurrentValue;
+        $this->About_Text->PlaceHolder = RemoveHtml($this->About_Text->caption());
+
+        // Call Row Rendered event
+        $this->rowRendered();
+    }
+
+    // Aggregate list row values
+    public function aggregateListRowValues()
+    {
+    }
+
+    // Aggregate list row (for rendering)
+    public function aggregateListRow()
+    {
+        // Call Row Rendered event
+        $this->rowRendered();
+    }
+
+    // Export data in HTML/CSV/Word/Excel/Email/PDF format
+	// Now including Export Print (printer friendly), modification by Masino Sinaga, September 27, 2022 
+    public function exportDocument($doc, $recordset, $startRec = 1, $stopRec = 1, $exportPageType = "")
+    {
+        if (!$recordset || !$doc) {
+            return;
+        }
+        if (!$doc->ExportCustom) {
+            // Write header
+            $doc->exportTableHeader();
+            if ($doc->Horizontal) { // Horizontal format, write header
+                $doc->beginExportRow();
+                if ($exportPageType == "view") {
+                    $doc->exportCaption($this->Language_Code);
+                    $doc->exportCaption($this->Language_Name);
+                    $doc->exportCaption($this->_Default);
+                    $doc->exportCaption($this->Site_Logo);
+                    $doc->exportCaption($this->Site_Title);
+                    $doc->exportCaption($this->Default_Thousands_Separator);
+                    $doc->exportCaption($this->Default_Decimal_Point);
+                    $doc->exportCaption($this->Default_Currency_Symbol);
+                    $doc->exportCaption($this->Default_Money_Thousands_Separator);
+                    $doc->exportCaption($this->Default_Money_Decimal_Point);
+                    $doc->exportCaption($this->Terms_And_Condition_Text);
+                    $doc->exportCaption($this->Announcement_Text);
+                    $doc->exportCaption($this->About_Text);
+                } else {
+                    $doc->exportCaption($this->Language_Code);
+                    $doc->exportCaption($this->Language_Name);
+                    $doc->exportCaption($this->_Default);
+                    $doc->exportCaption($this->Site_Logo);
+                    $doc->exportCaption($this->Site_Title);
+                    $doc->exportCaption($this->Default_Thousands_Separator);
+                    $doc->exportCaption($this->Default_Decimal_Point);
+                    $doc->exportCaption($this->Default_Currency_Symbol);
+                    $doc->exportCaption($this->Default_Money_Thousands_Separator);
+                    $doc->exportCaption($this->Default_Money_Decimal_Point);
+                }
+                $doc->endExportRow();
+            }
+        }
+
+        // Move to first record
+        $recCnt = $startRec - 1;
+        $stopRec = ($stopRec > 0) ? $stopRec : PHP_INT_MAX;
+		// Begin of modification Record Number in Exported Data by Masino Sinaga, September 27, 2022
+		$seqRec = 0;
+		if (CurrentPageID() == "view") { // Modified by Masino Sinaga, reset seq. number in View Page
+		    $_SESSION["First_Record"] = 0;
+			$seqRec = (empty($_SESSION["First_Record"])) ? 0 : $_SESSION["First_Record"] - 1; 
+		} else {
+			$seqRec = (empty($_SESSION["First_Record"])) ? $recCnt : $_SESSION["First_Record"] - 1;
+		}
+		// End of modification Record Number in Exported Data by Masino Sinaga, September 27, 2022
+        while (!$recordset->EOF && $recCnt < $stopRec) {
+            $row = $recordset->fields;
+            $recCnt++;
+			$seqRec++; // Record Number in Exported Data by Masino Sinaga, September 27, 2022
+            if ($recCnt >= $startRec) {
+                $rowCnt = $recCnt - $startRec + 1;
+                // Page break
+				// Begin of modification PageBreak for Export to PDF dan Export to Word by Masino Sinaga, September 27, 2022
+                if ($this->ExportPageBreakCount > 0 && ($this->Export == "pdf" || $this->Export =="word")) {
+                    if ($rowCnt > 1 && ($rowCnt - 1) % $this->ExportPageBreakCount == 0) {
+                        $doc->exportPageBreak();
+						$doc->beginExportRow(); // Begin of modification by Masino Sinaga, table header will be repeated at the top of each page after page break, must be handled from here for Export to PDF that has the possibility to repeat the table header column in each top of page
+						$doc->exportCaption($this->Language_Code);
+						$doc->exportCaption($this->Language_Name);
+						$doc->exportCaption($this->_Default);
+						$doc->exportCaption($this->Site_Logo);
+						$doc->exportCaption($this->Site_Title);
+						$doc->exportCaption($this->Default_Thousands_Separator);
+						$doc->exportCaption($this->Default_Decimal_Point);
+						$doc->exportCaption($this->Default_Currency_Symbol);
+						$doc->exportCaption($this->Default_Money_Thousands_Separator);
+						$doc->exportCaption($this->Default_Money_Decimal_Point);
+						$doc->endExportRow(); // End of modification by Masino Sinaga, table header will be repeated at the top of each page after page break
+                    }
+                }
+				// End of modification PageBreak for Export to PDF dan Export to Word by Masino Sinaga, September 27, 2022
+                $this->loadListRowValues($row);
+
+                // Render row
+                $this->RowType = ROWTYPE_VIEW; // Render view
+                $this->resetAttributes();
+                $this->renderListRow();
+                if (!$doc->ExportCustom) {
+                    $doc->beginExportRow($rowCnt); // Allow CSS styles if enabled
+                    if ($exportPageType == "view") {
+                        $doc->exportField($this->Language_Code);
+                        $doc->exportField($this->Language_Name);
+                        $doc->exportField($this->_Default);
+                        $doc->exportField($this->Site_Logo);
+                        $doc->exportField($this->Site_Title);
+                        $doc->exportField($this->Default_Thousands_Separator);
+                        $doc->exportField($this->Default_Decimal_Point);
+                        $doc->exportField($this->Default_Currency_Symbol);
+                        $doc->exportField($this->Default_Money_Thousands_Separator);
+                        $doc->exportField($this->Default_Money_Decimal_Point);
+                        $doc->exportField($this->Terms_And_Condition_Text);
+                        $doc->exportField($this->Announcement_Text);
+                        $doc->exportField($this->About_Text);
+                    } else {
+                        $doc->exportField($this->Language_Code);
+                        $doc->exportField($this->Language_Name);
+                        $doc->exportField($this->_Default);
+                        $doc->exportField($this->Site_Logo);
+                        $doc->exportField($this->Site_Title);
+                        $doc->exportField($this->Default_Thousands_Separator);
+                        $doc->exportField($this->Default_Decimal_Point);
+                        $doc->exportField($this->Default_Currency_Symbol);
+                        $doc->exportField($this->Default_Money_Thousands_Separator);
+                        $doc->exportField($this->Default_Money_Decimal_Point);
+                    }
+                    $doc->endExportRow($rowCnt);
+                }
+            }
+
+            // Call Row Export server event
+            if ($doc->ExportCustom) {
+                $this->rowExport($doc, $row);
+            }
+            $recordset->moveNext();
+        }
+        if (!$doc->ExportCustom) {
+            $doc->exportTableFooter();
+        }
+    }
+
+    // Get file data
+    public function getFileData($fldparm, $key, $resize, $width = 0, $height = 0, $plugins = [])
+    {
+        global $DownloadFileName;
+
+        // No binary fields
+        return false;
+    }
+
+    // Table level events
+
+    // Table Load event
+    public function tableLoad()
+    {
+        // Enter your code here
+    }
+
+    // Recordset Selecting event
+    public function recordsetSelecting(&$filter)
+    {
+        // Enter your code here
+    }
+
+    // Recordset Selected event
+    public function recordsetSelected(&$rs)
+    {
+        //Log("Recordset Selected");
+    }
+
+    // Recordset Search Validated event
+    public function recordsetSearchValidated()
+    {
+        // Example:
+        //$this->MyField1->AdvancedSearch->SearchValue = "your search criteria"; // Search value
+    }
+
+    // Recordset Searching event
+    public function recordsetSearching(&$filter)
+    {
+        // Enter your code here
+    }
+
+    // Row_Selecting event
+    public function rowSelecting(&$filter)
+    {
+        // Enter your code here
+    }
+
+    // Row Selected event
+    public function rowSelected(&$rs)
+    {
+        //Log("Row Selected");
+    }
+
+    // Row Inserting event
+    public function rowInserting($rsold, &$rsnew)
+    {
+        // Enter your code here
+        // To cancel, set return value to false
+        return true;
+    }
+
+    // Row Inserted event
+    public function rowInserted($rsold, &$rsnew)
+    {
+        //Log("Row Inserted");
+    }
+
+    // Row Updating event
+    public function rowUpdating($rsold, &$rsnew)
+    {
+        // Enter your code here
+        // To cancel, set return value to false
+        return true;
+    }
+
+    // Row Updated event
+    public function rowUpdated($rsold, &$rsnew)
+    {
+        //Log("Row Updated");
+    }
+
+    // Row Update Conflict event
+    public function rowUpdateConflict($rsold, &$rsnew)
+    {
+        // Enter your code here
+        // To ignore conflict, set return value to false
+        return true;
+    }
+
+    // Grid Inserting event
+    public function gridInserting()
+    {
+        // Enter your code here
+        // To reject grid insert, set return value to false
+        return true;
+    }
+
+    // Grid Inserted event
+    public function gridInserted($rsnew)
+    {
+        //Log("Grid Inserted");
+    }
+
+    // Grid Updating event
+    public function gridUpdating($rsold)
+    {
+        // Enter your code here
+        // To reject grid update, set return value to false
+        return true;
+    }
+
+    // Grid Updated event
+    public function gridUpdated($rsold, $rsnew)
+    {
+        //Log("Grid Updated");
+    }
+
+    // Row Deleting event
+    public function rowDeleting(&$rs)
+    {
+        // Enter your code here
+        // To cancel, set return value to False
+        return true;
+    }
+
+    // Row Deleted event
+    public function rowDeleted(&$rs)
+    {
+        //Log("Row Deleted");
+    }
+
+    // Email Sending event
+    public function emailSending($email, &$args)
+    {
+        //var_dump($email, $args); exit();
+        return true;
+    }
+
+    // Lookup Selecting event
+    public function lookupSelecting($fld, &$filter)
+    {
+        //var_dump($fld->Name, $fld->Lookup, $filter); // Uncomment to view the filter
+        // Enter your code here
+    }
+
+    // Row Rendering event
+    public function rowRendering()
+    {
+        // Enter your code here
+    }
+
+    // Row Rendered event
+    public function rowRendered()
+    {
+        // To view properties of field class, use:
+        //var_dump($this-><FieldName>);
+    }
+
+    // User ID Filtering event
+    public function userIdFiltering(&$filter)
+    {
+        // Enter your code here
+    }
+}

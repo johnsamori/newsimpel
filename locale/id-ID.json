@@ -1,0 +1,15 @@
+{
+  "id": "id-ID",
+  "desc": "Indonesia (Indonesia)",
+  "number": "#,##0.###",
+  "currency": "¤#,##0.00",
+  "currency_code": "IDR",
+  "currency_symbol": "Rp",
+  "percent": "#,##0%",
+  "decimal_separator": ".",
+  "grouping_separator": ",",
+  "numbering_system": null,
+  "date": "dd-MM-yyyy",
+  "time": "HH:mm",
+  "time_zone": "Asia/Jakarta"
+}

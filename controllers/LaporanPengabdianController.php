@@ -1,0 +1,40 @@
+<?php
+
+namespace PHPMaker2023\new2023;
+
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface as Response;
+
+class LaporanPengabdianController extends ControllerBase
+{
+    // list
+    public function list(Request $request, Response $response, array $args): Response
+    {
+        return $this->runPage($request, $response, $args, "LaporanPengabdianList");
+    }
+
+    // add
+    public function add(Request $request, Response $response, array $args): Response
+    {
+        return $this->runPage($request, $response, $args, "LaporanPengabdianAdd");
+    }
+
+    // view
+    public function view(Request $request, Response $response, array $args): Response
+    {
+        return $this->runPage($request, $response, $args, "LaporanPengabdianView");
+    }
+
+    // edit
+    public function edit(Request $request, Response $response, array $args): Response
+    {
+        return $this->runPage($request, $response, $args, "LaporanPengabdianEdit");
+    }
+
+    // delete
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        return $this->runPage($request, $response, $args, "LaporanPengabdianDelete");
+    }
+}
